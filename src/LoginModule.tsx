@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Session } from '@supabase/supabase-js';
+import supabase from './supabaseClient';
 
 interface LoginModuleProps {
   onLogin: () => void;
@@ -10,12 +12,32 @@ interface LoginModuleProps {
 export const LoginModule: React.FC<LoginModuleProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [session, setSession] = useState<Session | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically validate the credentials
-    // For now, we'll just call onLogin
+    // Use Supabase client to validate credentials
+
     onLogin();
+  };
+
+  const handleRegBtn = () => {
+    //change to register component
+    
   };
 
   return (
@@ -45,9 +67,15 @@ export const LoginModule: React.FC<LoginModuleProps> = ({ onLogin }) => {
             </div>
           </div>
         </form>
+
+        {session && (
+          <div className="text-center mt-4">
+            <p>This app is powered by Supabase.</p>
+          </div>
+        )}
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button onClick={handleLogin}>Login</Button>
+      <CardFooter className="flex">
+        <Button className="mx-1" onClick={handleLogin}>Login</Button>
       </CardFooter>
     </Card>
   );

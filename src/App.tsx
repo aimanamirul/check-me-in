@@ -8,10 +8,18 @@ import { Button } from "@/components/ui/button"
 import { Moon, Sun, BookOpenText, List } from 'lucide-react'
 import { LoginModule } from './LoginModule'
 import { NoteViewModule } from './NoteViewModule'
+import { Registration } from './Registration'
+import supabase from './supabaseClient'
+
+if(!supabase) {
+  console.error('Error! Supabase client could not be created!');
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("notes")
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -126,11 +134,22 @@ export default function App() {
                 <ToDoList items={dummyTodos} onToggle={() => {}} />
               </TabsContent>
             </Tabs>
-            {!isLoggedIn && (
-              <div className="mt-auto">
-                <LoginModule onLogin={handleLogin} />
-              </div>
+            
+            {!session && (
+              <Tabs defaultValue="login" className="w-full mt-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
+                </TabsList>
+                <TabsContent value="login">
+                  <LoginModule onLogin={() => {}} />
+                </TabsContent>
+                <TabsContent value="register">
+                  <Registration />
+                </TabsContent>
+              </Tabs>
             )}
+
           </div>
         </div>
       </div>

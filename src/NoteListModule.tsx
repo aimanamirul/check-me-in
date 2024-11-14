@@ -17,8 +17,17 @@ export function ListModule({ items }: ListModuleProps) {
     )
   }
 
+  const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    const container = event.currentTarget;
+    event.preventDefault();
+    container.scrollBy({
+      top: event.deltaY > 0 ? 100 : -100,
+      behavior: 'smooth'
+    });
+  }
+
   return (
-    <div className="space-y-4 overflow-y-auto max-h-72 scroll-smooth">
+    <div className="space-y-4 overflow-y-auto max-h-72 scroll-smooth" onWheel={handleWheel}>
       {items.map(item => (
         <Card key={item.id} className="transition-shadow hover:shadow-lg dark:bg-gray-800">
           <CardHeader
