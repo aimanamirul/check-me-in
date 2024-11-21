@@ -9,17 +9,33 @@ import { Moon, Sun, BookOpenText, List } from 'lucide-react'
 import { LoginModule } from './LoginModule'
 import { NoteViewModule } from './NoteViewModule'
 import { Registration } from './Registration'
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from '@/hooks/use-toast'
 import supabase from './supabaseClient'
+import { Session } from '@supabase/supabase-js'
+import { UserModule } from './UserModule'
+import { Spinner } from '@/components/spinner'
+import { Note } from './util/types'
 
-if(!supabase) {
+if (!supabase) {
   console.error('Error! Supabase client could not be created!');
 }
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("notes")
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [session, setSession] = useState<Session | null>(null);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+  const [authTab, setAuthTab] = useState("login")
+  const { toast } = useToast();
+
+  // ================================================
+  //          DARK MODE FUNCTIONALITY
+  // ================================================
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode)
+  }
 
   useEffect(() => {
     if (isDarkMode) {
@@ -29,65 +45,83 @@ export default function App() {
     }
   }, [isDarkMode])
 
-  const fetchData = async () => {
-    try {
-      // Simulating API call with dummy data
-      const response = {
-        ok: true,
-        json: async () => ({
-          notes: dummyNotes,
-          todos: dummyTodos
-        })
-      };
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+  // ================================================
+  //          LOGIN/LOGOUT FUNCTIONALITY
+  // ================================================
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const loadData = async () => {
-      const result = await fetchData();
-      if (result) {
-        // Here you would typically update your state with the fetched data
-        console.log('Fetched data:', result);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
+  const handleLogin = (session: Session | null) => {
+    console.log("Logging in");
+    setSession(session);
   }
 
-  const handleLogin = () => {
-    setIsLoggedIn(true)
+  const handleLogout = () => {
+    setSession(null);
   }
+
+  // ================================================
+  //           VIEW MODE FUNCTIONALITY
+  // ================================================
 
   const [viewMode, setViewMode] = useState<'list' | 'individual'>('list');
 
-  const dummyNotes = [
-    { id: 1, title: "Grocery List", text: "Remember to buy groceries, including fruits, vegetables, dairy products, and any other essentials for the week.", date: "2023-10-01" },
-    { id: 2, title: "Birthday Reminder", text: "Call mom on her birthday to wish her a happy birthday and ask her how she is doing.", date: "2023-10-02" },
-    { id: 3, title: "Work Task", text: "Finish the project report by compiling all the necessary data and insights gathered over the past month.", date: "2023-10-03" },
-    { id: 4, title: "Meeting Notes", text: "Discuss project timeline with the team, ensuring everyone is aligned on deadlines and responsibilities.", date: "2023-10-04" },
-    { id: 5, title: "Book Recommendation", text: "Read 'The Pragmatic Programmer' to enhance coding skills and learn best practices in software development.", date: "2023-10-05" },
-    { id: 6, title: "Workout Plan", text: "30 minutes of cardio followed by 20 minutes of strength training, focusing on major muscle groups for a balanced workout.", date: "2023-10-06" },
-  ]
+  // ================================================
+  //           DATA RETRIEVAL
+  // ================================================
 
-  const dummyTodos = [
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [session]);
+
+  const todosList = [
     { id: 1, text: "Complete daily check-in", completed: false },
     { id: 2, text: "Review team's progress", completed: true },
     { id: 3, text: "Prepare for tomorrow's meeting", completed: false },
   ]
+
+  const handleRegistrationSuccess = () => {
+    setAuthTab("login");
+    toast({
+      title: "Registration successful!",
+      description: "You can now log in with your credentials.",
+    });
+    fetchNotes();
+  };
+
+  const fetchNotes = async () => {
+    if (!session) {
+      setNotes([]);
+      return;
+    }
+
+    try {
+      setIsLoadingNotes(true);
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('author', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: 'Error fetching notes',
+          description: error.message,
+        });
+        return;
+      }
+
+      setNotes(data || []);
+    } catch (error) {
+      toast({
+        title: 'Error fetching notes',
+        description: 'An unexpected error occurred',
+      });
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 flex flex-col min-h-screen font-poppins">
@@ -115,44 +149,46 @@ export default function App() {
               <TabsContent value="notes">
                 <h2 className="text-xl font-semibold mb-4">Notes</h2>
                 {/* <ListModule items={dummyNotes} /> */}
-              {viewMode === 'list' ? (
-                <ListModule items={dummyNotes} />
-              ) : (
-                <NoteViewModule notes={dummyNotes} />
-              )}
-              <div className="flex space-x-4 my-4">
-                <Button onClick={() => setViewMode('list')} variant={viewMode === 'list' ? 'default' : 'outline'}>
-                  <List className={`h-4 w-4 ${viewMode === 'list' ? (isDarkMode ? 'text-gray-700' : 'text-white') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
-                </Button>
-                <Button onClick={() => setViewMode('individual')} variant={viewMode === 'individual' ? 'default' : 'outline'}>
-                  <BookOpenText className={`h-4 w-4 ${viewMode === 'individual' ? (isDarkMode ? 'text-gray-700' : 'text-white') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
-                </Button>
-              </div>
+                {viewMode === 'list' ? (
+                  <ListModule items={notes} />
+                ) : (
+                  <NoteViewModule notes={notes} />
+                )}
+                <div className="flex space-x-4 my-4">
+                  <Button onClick={() => setViewMode('list')} variant={viewMode === 'list' ? 'default' : 'outline'}>
+                    <List className={`h-4 w-4 ${viewMode === 'list' ? (isDarkMode ? 'text-gray-700' : 'text-white') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
+                  </Button>
+                  <Button onClick={() => setViewMode('individual')} variant={viewMode === 'individual' ? 'default' : 'outline'}>
+                    <BookOpenText className={`h-4 w-4 ${viewMode === 'individual' ? (isDarkMode ? 'text-gray-700' : 'text-white') : (isDarkMode ? 'text-gray-400' : 'text-gray-500')}`} />
+                  </Button>
+                </div>
               </TabsContent>
               <TabsContent value="todos">
                 <h2 className="text-xl font-semibold mb-4">To-Do List</h2>
-                <ToDoList items={dummyTodos} onToggle={() => {}} />
+                <ToDoList items={todosList} onToggle={() => { }} />
               </TabsContent>
             </Tabs>
-            
+
             {!session && (
-              <Tabs defaultValue="login" className="w-full mt-4">
+              <Tabs value={authTab} onValueChange={setAuthTab} className="w-full mt-4">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
+                  <TabsTrigger value="login" className="text-gray-700 data-[state=inactive]:text-gray-300">Login</TabsTrigger>
+                  <TabsTrigger value="register" className="text-gray-700 data-[state=inactive]:text-gray-300">Register</TabsTrigger>
                 </TabsList>
                 <TabsContent value="login">
-                  <LoginModule onLogin={() => {}} />
+                  <LoginModule onLogin={(session) => handleLogin(session)} />
                 </TabsContent>
                 <TabsContent value="register">
-                  <Registration />
+                  <Registration onRegistrationSuccess={handleRegistrationSuccess} />
                 </TabsContent>
               </Tabs>
             )}
-
+            {session && <UserModule session={session} onLogout={() => handleLogout()} />}
+            <Toaster />
           </div>
         </div>
       </div>
+      {isLoadingNotes && <Spinner text="Loading notes..." />}
     </div>
   )
 }

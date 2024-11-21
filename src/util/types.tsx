@@ -6,7 +6,12 @@ export interface Note {
   id: number;
   title?: string;
   text: string;
-  date?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface NoteWithSync extends Note {
+  synced?: boolean;
 }
 
 export interface Todo {
@@ -15,6 +20,11 @@ export interface Todo {
   completed: boolean;
 }
 
+export interface User {
+  username?: string;
+  email?: string;
+} 
+
 // Zod Schemas
 
 export const userRegSchema = z.object({
@@ -22,3 +32,9 @@ export const userRegSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, { message: "Password is required" }).max(20, { message: "Password must be less than 20 characters" }),
 });
+
+export const noteSchema = z.object({
+  title: z.string().optional(),
+  text: z.string().min(1, { message: "Text is required" }),
+});
+  

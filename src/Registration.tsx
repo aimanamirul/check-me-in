@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { useForm, SubmitHandler } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { Button } from './components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from './components/ui/form';
 import { Input } from './components/ui/input';
-
+import { Spinner } from './components/spinner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -12,7 +12,11 @@ import { userRegSchema } from './util/types';
 
 import supabase from './supabaseClient';
 
-export const Registration: React.FC = () => {
+interface RegistrationProps {
+    onRegistrationSuccess: () => void;
+}
+
+export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSuccess }) => {
 
     const form = useForm<z.infer<typeof userRegSchema>>({
         resolver: zodResolver(userRegSchema),
@@ -23,8 +27,11 @@ export const Registration: React.FC = () => {
         },
     });
 
+    const [isLoading, setIsLoading] = useState(false);
+
     async function onSubmit(data: z.infer<typeof userRegSchema>) {
         try {
+            setIsLoading(true);
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: data.email,
                 password: data.password,
@@ -35,16 +42,19 @@ export const Registration: React.FC = () => {
                 },
             });
 
-            console.log(authData);
             if (authError) throw authError;
+
+            onRegistrationSuccess();
 
         } catch (error) {
             console.error('Error:', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 
     return (
-        <Card>
+        <Card className="relative w-full">
             <CardHeader>
                 <CardTitle>Register</CardTitle>
             </CardHeader>
@@ -72,7 +82,7 @@ export const Registration: React.FC = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <Input placeholder="Password" {...field} />
+                                            <Input type="password" placeholder="Password" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -97,6 +107,7 @@ export const Registration: React.FC = () => {
                     </form>
                 </Form>
             </CardContent>
+            {isLoading && <Spinner text="Registering..." />}
         </Card >
     );
 };
