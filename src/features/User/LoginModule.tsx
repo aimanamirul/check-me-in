@@ -6,7 +6,7 @@ import { Session } from '@supabase/supabase-js';
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from '@/hooks/use-toast'
 import { Spinner } from '@/components/spinner';
-import supabase from './supabaseClient';
+import supabase from '../../util/supabaseClient';
 
 interface LoginModuleProps {
   onLogin: (session: Session | null) => void;

@@ -2,13 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Note } from './util/types'
+import { Note } from '../../util/types'
 
 interface ListModuleProps {
   items: Note[]
 }
 
-export function ListModule({ items }: ListModuleProps) {
+export function NoteList({ items }: ListModuleProps) {
   const [expandedItems, setExpandedItems] = useState<number[]>([])
 
   const toggleItem = (id: number) => {
@@ -62,7 +62,7 @@ export function ListModule({ items }: ListModuleProps) {
           </Card>
         ))
       ) : (
-        <Card>
+        <Card className="h-full min-h-72">
           <CardHeader>
             <CardTitle>No Notes</CardTitle>
           </CardHeader>

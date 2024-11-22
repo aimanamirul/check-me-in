@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
-import { Button } from './components/ui/button';
-import supabase from './supabaseClient';
-import { User } from './util/types';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import supabase from '../../util/supabaseClient';
+import { User } from '../../util/types';
 import { Session } from '@supabase/supabase-js';
 
 interface SessionUser extends User {

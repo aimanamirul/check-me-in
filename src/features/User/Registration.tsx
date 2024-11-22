@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { useForm } from "react-hook-form"
-import { Button } from './components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from './components/ui/form';
-import { Input } from './components/ui/input';
-import { Spinner } from './components/spinner';
+import { Button } from '../../components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../../components/ui/form';
+import { Input } from '../../components/ui/input';
+import { Spinner } from '../../components/spinner';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { userRegSchema } from '../../util/types';
 
-import { userRegSchema } from './util/types';
-
-import supabase from './supabaseClient';
+import supabase from '../../util/supabaseClient';
 
 interface RegistrationProps {
     onRegistrationSuccess: () => void;
 }
 
 export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSuccess }) => {
-
     const form = useForm<z.infer<typeof userRegSchema>>({
         resolver: zodResolver(userRegSchema),
         defaultValues: {
@@ -26,6 +24,8 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSucces
             password: '',
         },
     });
+
+    const { setError } = form;
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -42,12 +42,25 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSucces
                 },
             });
 
-            if (authError) throw authError;
+            if (authError) {
+                if (authError.message.includes('already registered')) {
+                    setError('root', { 
+                        message: 'Email already registered. Please use a different email address or try logging in.'
+                    });
+                } else {
+                    setError('root', { 
+                        message: authError.message 
+                    });
+                }
+                return;
+            }
 
             onRegistrationSuccess();
 
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (error: any) {
+            setError('root', { 
+                message: error.message || 'Please try again.'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -68,7 +81,7 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSucces
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormControl>
-                                            <Input placeholder="Username" {...field} />
+                                            <Input placeholder="Display Name" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -103,11 +116,14 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSucces
                                 )}
                             />
                         </div>
+                        <FormMessage className="text-red-500">
+                            {form.formState.errors.root?.message}
+                        </FormMessage>
                         <Button type="submit">Register</Button>
                     </form>
                 </Form>
             </CardContent>
             {isLoading && <Spinner text="Registering..." />}
-        </Card >
+        </Card>
     );
 };

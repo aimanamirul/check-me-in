@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { NoteModule } from './NoteModule'
-import { TodoModule } from './ToDoModule'
-import { ToDoList } from './ToDoList'
-import { ListModule } from './NoteListModule'
+import { NoteEditor } from './features/Notes/NoteEditor'
+import { ToDo } from './features/ToDo/ToDo'
+import { ToDoList } from './features/ToDo/ToDoList'
+import { NoteList } from './features/Notes/NoteList'
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, BookOpenText, List } from 'lucide-react'
-import { LoginModule } from './LoginModule'
-import { NoteViewModule } from './NoteViewModule'
-import { Registration } from './Registration'
+import { LoginModule } from './features/User/LoginModule'
+import { NoteViewer } from './features/Notes/NoteViewer'
+import { Registration } from './features/User/Registration'
 import { Toaster } from "@/components/ui/toaster"
 import { useToast } from '@/hooks/use-toast'
-import supabase from './supabaseClient'
+import supabase from './util/supabaseClient'
 import { Session } from '@supabase/supabase-js'
-import { UserModule } from './UserModule'
+import { UserModule } from './features/User/UserModule'
 import { Spinner } from '@/components/spinner'
 import { Note } from './util/types'
 
@@ -85,7 +85,7 @@ export default function App() {
     setAuthTab("login");
     toast({
       title: "Registration successful!",
-      description: "You can now log in with your credentials.",
+      description: "You can now save your check-ins.",
     });
     fetchNotes();
   };
@@ -135,8 +135,8 @@ export default function App() {
               </Button>
             </div>
             <div className="flex-grow overflow-auto">
-              {activeTab === "notes" && <NoteModule />}
-              {activeTab === "todos" && <TodoModule />}
+              {activeTab === "notes" && <NoteEditor onNoteUpdated={fetchNotes} />}
+              {activeTab === "todos" && <ToDo />}
             </div>
           </div>
 
@@ -150,9 +150,9 @@ export default function App() {
                 <h2 className="text-xl font-semibold mb-4">Notes</h2>
                 {/* <ListModule items={dummyNotes} /> */}
                 {viewMode === 'list' ? (
-                  <ListModule items={notes} />
+                  <NoteList items={notes} />
                 ) : (
-                  <NoteViewModule notes={notes} />
+                  <NoteViewer notes={notes} onNoteUpdated={fetchNotes} />
                 )}
                 <div className="flex space-x-4 my-4">
                   <Button onClick={() => setViewMode('list')} variant={viewMode === 'list' ? 'default' : 'outline'}>

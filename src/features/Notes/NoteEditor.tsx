@@ -7,7 +7,7 @@ import { Save, Cat } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormMessage } from './components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../../components/ui/form';
 import { useForm } from 'react-hook-form';
 import { noteSchema } from '@/util/types'
 import { Toaster } from "@/components/ui/toaster"
@@ -16,9 +16,9 @@ import '@/styles/cat.css'
 
 import { Spinner } from '@/components/spinner';
 
-import supabase from './supabaseClient';
+import supabase from '../../util/supabaseClient';
 
-export function NoteModule() {
+export function NoteEditor({ onNoteUpdated }: { onNoteUpdated: () => void }) {
   const [showMeow, setShowMeow] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast();
@@ -59,6 +59,8 @@ export function NoteModule() {
             title: 'Note saved successfully',
             description: 'Your note has been saved!',
           })
+          onNoteUpdated();
+          form.reset();
         }
       }
     } catch (error: any) {
@@ -102,7 +104,7 @@ export function NoteModule() {
   }, [])
 
   return (
-    <Card className="flex flex-col h-[80dvh] md:h-full relative">
+    <Card className="flex flex-col min-h-[80dvh] md:h-full relative">
       <CardHeader>
         <CardTitle>Daily Note</CardTitle>
       </CardHeader>
