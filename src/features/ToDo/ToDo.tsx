@@ -5,11 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Trash2 } from 'lucide-react'
 
-interface Todo {
-  id: number
-  text: string
-  completed: boolean
-}
+import { Todo } from '../../util/types'
+
+import { ToDoList } from './ToDoList'
 
 export function ToDo() {
   const [todos, setTodos] = useState<Todo[]>([])
@@ -17,7 +15,7 @@ export function ToDo() {
 
   const addTodo = () => {
     if (newTodo.trim() !== '') {
-      setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }])
+      setTodos([...todos, { id: Date.now(), todo_task: newTodo, todo_date: new Date().toISOString(), completed: false }])
       setNewTodo('')
     }
   }
@@ -35,7 +33,7 @@ export function ToDo() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>To-Do List</CardTitle>
+        <CardTitle>Today's To-Do List</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex space-x-2 mb-4">
@@ -56,8 +54,8 @@ export function ToDo() {
                 checked={todo.completed}
                 onCheckedChange={() => toggleTodo(todo.id)}
               />
-              <span className={todo.completed ? 'line-through' : ''}>{todo.text}</span>
-              <Button variant="ghost" size="sm" onClick={() => removeTodo(todo.id)}>
+              <span className={todo.completed ? 'line-through' : ''}>{todo.todo_task}</span>
+              <Button variant="ghost" size="sm" className="text-gray-100 dark:text-gray-100" onClick={() => removeTodo(todo.id)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             </li>

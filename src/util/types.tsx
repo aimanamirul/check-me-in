@@ -16,7 +16,8 @@ export interface NoteWithSync extends Note {
 
 export interface Todo {
   id: number;
-  text: string;
+  todo_task: string;
+  todo_date: string;
   completed: boolean;
 }
 

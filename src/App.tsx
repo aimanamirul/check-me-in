@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { NoteEditor } from './features/Notes/NoteEditor'
 import { ToDo } from './features/ToDo/ToDo'
-import { ToDoList } from './features/ToDo/ToDoList'
+import { ToDoCalendar } from './features/ToDo/ToDoCalendar'
 import { NoteList } from './features/Notes/NoteList'
 import { Button } from "@/components/ui/button"
 import { Moon, Sun, BookOpenText, List } from 'lucide-react'
@@ -16,39 +16,26 @@ import { Session } from '@supabase/supabase-js'
 import { UserModule } from './features/User/UserModule'
 import { Spinner } from '@/components/spinner'
 import { Note } from './util/types'
+import { AppProvider, useApp } from './context/AppContext'
 
 if (!supabase) {
   console.error('Error! Supabase client could not be created!');
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("notes")
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
-  const [authTab, setAuthTab] = useState("login")
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  )
+}
+
+function AppContent() {
+  const { isDarkMode, toggleDarkMode, session, setSession, notes, fetchNotes, isLoadingNotes } = useApp();
+  const [activeTab, setActiveTab] = useState("notes");
+  const [authTab, setAuthTab] = useState("login");
+  const [viewMode, setViewMode] = useState<'list' | 'individual'>('list');
   const { toast } = useToast();
-
-  // ================================================
-  //          DARK MODE FUNCTIONALITY
-  // ================================================
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode)
-  }
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [isDarkMode])
-
-
-  // ================================================
-  //          LOGIN/LOGOUT FUNCTIONALITY
-  // ================================================
 
   const handleLogin = (session: Session | null) => {
     console.log("Logging in");
@@ -59,28 +46,6 @@ export default function App() {
     setSession(null);
   }
 
-  // ================================================
-  //           VIEW MODE FUNCTIONALITY
-  // ================================================
-
-  const [viewMode, setViewMode] = useState<'list' | 'individual'>('list');
-
-  // ================================================
-  //           DATA RETRIEVAL
-  // ================================================
-
-  const [notes, setNotes] = useState<Note[]>([]);
-
-  useEffect(() => {
-    fetchNotes();
-  }, [session]);
-
-  const todosList = [
-    { id: 1, text: "Complete daily check-in", completed: false },
-    { id: 2, text: "Review team's progress", completed: true },
-    { id: 3, text: "Prepare for tomorrow's meeting", completed: false },
-  ]
-
   const handleRegistrationSuccess = () => {
     setAuthTab("login");
     toast({
@@ -88,39 +53,6 @@ export default function App() {
       description: "You can now save your check-ins.",
     });
     fetchNotes();
-  };
-
-  const fetchNotes = async () => {
-    if (!session) {
-      setNotes([]);
-      return;
-    }
-
-    try {
-      setIsLoadingNotes(true);
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('author', session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        toast({
-          title: 'Error fetching notes',
-          description: error.message,
-        });
-        return;
-      }
-
-      setNotes(data || []);
-    } catch (error) {
-      toast({
-        title: 'Error fetching notes',
-        description: 'An unexpected error occurred',
-      });
-    } finally {
-      setIsLoadingNotes(false);
-    }
   };
 
   return (
@@ -165,7 +97,8 @@ export default function App() {
               </TabsContent>
               <TabsContent value="todos">
                 <h2 className="text-xl font-semibold mb-4">To-Do List</h2>
-                <ToDoList items={todosList} onToggle={() => { }} />
+                {/* <ToDoList items={todosList} onToggle={() => { }} /> */}
+                <ToDoCalendar />
               </TabsContent>
             </Tabs>
 

@@ -1,17 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox" // Assuming you have a Checkbox component
 
-interface ListItem {
-  id: number;
-  text: string;
-}
+import { Todo } from '../../util/types'
 
-interface TodoItem extends ListItem {
-  completed: boolean
-}
+// interface ListItem {
+//   id: number;
+//   text: string;
+// }
+
+// interface TodoItem extends ListItem {
+//   completed: boolean
+// }
 
 interface ToDoListProps {
-  items: TodoItem[]
+  items: Todo[]
   onToggle: (id: number) => void
   title?: string
 }
@@ -31,7 +33,7 @@ export function ToDoList({ items, onToggle, title = "To-Do List" }: ToDoListProp
                 onCheckedChange={() => onToggle(item.id)}
               />
               <span className={item.completed ? "line-through text-gray-500" : ""}>
-                {item.text}
+                {item.todo_task}
               </span>
             </li>
           ))}
