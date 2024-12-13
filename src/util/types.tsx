@@ -8,6 +8,7 @@ export interface Note {
   text: string;
   created_at?: string;
   updated_at?: string;
+  synced?: boolean;
 }
 
 export interface NoteWithSync extends Note {
@@ -17,7 +18,7 @@ export interface NoteWithSync extends Note {
 export interface Todo {
   id: number;
   todo_task: string;
-  todo_date: string;
+  todo_date: Date;
   completed: boolean;
 }
 

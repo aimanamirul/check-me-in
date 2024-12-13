@@ -14,7 +14,11 @@ export function ToDoCalendar() {
                 <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={(date) => setSelectedDate(date)}
+                    onSelect={(date) => {
+                        if (date && date !== selectedDate) {
+                            setSelectedDate(date);
+                        }
+                    }}
                     className="rounded-md border"
                 />
             </CardContent>

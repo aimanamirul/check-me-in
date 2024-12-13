@@ -39,8 +39,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [isDarkMode]);
 
   const fetchNotes = async () => {
+    const storedNotes = localStorage.getItem('notes');
+
     if (!session) {
-      setNotes([]);
+      if (storedNotes) {
+        setNotes(JSON.parse(storedNotes));
+      }
       return;
     }
 
@@ -60,7 +64,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setNotes(data || []);
+      const notesFromLocalStorage = JSON.parse(localStorage.getItem('notes') || '[]');
+      const allNotes = [
+        ...notesFromLocalStorage,
+        ...data.map(note => ({ ...note, synced: true })), // Mark the notes from the database as synced
+      ];
+
+      setNotes(allNotes);
     } catch (error) {
       toast({
         title: 'Error fetching notes',

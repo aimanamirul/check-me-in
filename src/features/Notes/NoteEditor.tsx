@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion, AnimatePresence } from 'framer-motion'
+import { v4 as uuidv4 } from 'uuid'
+
+import { noteSchema } from '@/util/types'
+
+import supabase from '../../util/supabaseClient'
+
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Save, Cat } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '../../components/ui/form';
-import { useForm } from 'react-hook-form';
-import { noteSchema } from '@/util/types'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../../components/ui/form'
 import { Toaster } from "@/components/ui/toaster"
-import { useToast } from '@/hooks/use-toast'
+import { Spinner } from '@/components/spinner'
 import '@/styles/cat.css'
-
-import { Spinner } from '@/components/spinner';
-
-import supabase from '../../util/supabaseClient';
+import { useToast } from '@/hooks/use-toast'
 
 export function NoteEditor({ onNoteUpdated }: { onNoteUpdated: () => void }) {
   const [showMeow, setShowMeow] = useState(false)
@@ -30,6 +32,16 @@ export function NoteEditor({ onNoteUpdated }: { onNoteUpdated: () => void }) {
     },
   });
 
+  function saveNoteToLocal(data: z.infer<typeof noteSchema>) {
+    const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+    const newNote = {
+      id: uuidv4(),
+      ...data,
+    };
+    notes.push(newNote);
+    localStorage.setItem('notes', JSON.stringify(notes));
+  }
+
   async function onSubmit(data: z.infer<typeof noteSchema>) {
     try {
       setIsLoading(true);
@@ -37,10 +49,12 @@ export function NoteEditor({ onNoteUpdated }: { onNoteUpdated: () => void }) {
       //check if user is logged in
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) {
+        saveNoteToLocal(data);
         toast({
-          title: 'Error getting user!',
-          description: 'Please login to save your note.',
+          title: 'Saved note locally!',
+          description: 'Please login to sync your note.',
         })
+        onNoteUpdated();
       } else {
         console.log(userData);
         const { data: noteData, error: noteError } = await supabase.from('notes').insert({

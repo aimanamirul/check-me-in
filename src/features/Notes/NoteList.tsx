@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Note } from '../../util/types'
+import { MdCloudOff } from 'react-icons/md'; // Import the cloud with slash icon
 
 interface ListModuleProps {
   items: Note[]
@@ -35,7 +36,10 @@ export function NoteList({ items }: ListModuleProps) {
               className="cursor-pointer flex items-center justify-between p-4 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-sky-950 dark:hover:bg-sky-800"
               onClick={() => toggleItem(item.id)}
             >
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.title || 'Untitled'}</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                {item.title || 'Untitled'}
+                {!item.synced && <MdCloudOff className="text-red-500 ml-2" />}
+              </CardTitle>
               <motion.div
                 initial={false}
                 animate={{ rotate: expandedItems.includes(item.id) ? 180 : 0 }}
