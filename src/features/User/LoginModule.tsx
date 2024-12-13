@@ -20,15 +20,19 @@ export const LoginModule: React.FC<LoginModuleProps> = ({ onLogin }) => {
   const { toast } = useToast();
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      onLogin(session);
+      if (session) {
+        setSession(session);
+        onLogin(session);
+      }
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      onLogin(session);
+      if (session) {
+        setSession(session);
+        onLogin(session);
+      }
     })
 
     return () => subscription.unsubscribe()
