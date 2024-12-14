@@ -4,6 +4,8 @@
 
 Check-Me-In is a daily check-in app for you to stay organized and focused. Currently included are a note module for jotting down important reminders and a To-Do module for managing tasks. The app is built using React, TypeScript, and Vite on Bun. Designed to be modular in mind, more modules will be added in future releases.
 
+Also powered by Supabase.
+
 ## Basic Setup (Using Bun)
 
 To set up this project, follow these steps:

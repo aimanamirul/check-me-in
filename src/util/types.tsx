@@ -27,6 +27,16 @@ export interface User {
   email?: string;
 } 
 
+export interface Agenda {
+  id: number;
+  title: string;
+  description: string;
+  startDate?: Date;
+  endDate?: Date;
+  startTime?: string;
+  endTime?: string;
+}
+
 // Zod Schemas
 
 export const userRegSchema = z.object({
@@ -39,4 +49,4 @@ export const noteSchema = z.object({
   title: z.string().optional(),
   text: z.string().min(1, { message: "Text is required" }),
 });
-  
+

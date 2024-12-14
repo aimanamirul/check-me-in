@@ -17,6 +17,8 @@ import { UserModule } from './features/User/UserModule'
 import { Spinner } from '@/components/spinner'
 import { Note } from './util/types'
 import { AppProvider, useApp } from './context/AppContext'
+import { Planner } from './features/Planner/Planner'
+import { PlannerCalendar } from './features/Planner/PlannerCalendar'
 
 if (!supabase) {
   console.error('Error! Supabase client could not be created!');
@@ -69,14 +71,16 @@ function AppContent() {
             <div className="flex-grow overflow-auto">
               {activeTab === "notes" && <NoteEditor onNoteUpdated={fetchNotes} />}
               {activeTab === "todos" && <ToDo />}
+              {activeTab === "planner" && <Planner />}
             </div>
           </div>
 
           <div className="lg:col-span-4 p-4 min-h-screen flex flex-col">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="notes" className="text-gray-700 data-[state=inactive]:text-gray-300">Notes</TabsTrigger>
                 <TabsTrigger value="todos" className="text-gray-700 data-[state=inactive]:text-gray-300">To-Do List</TabsTrigger>
+                <TabsTrigger value="planner" className="text-gray-700 data-[state=inactive]:text-gray-300">Planner</TabsTrigger>
               </TabsList>
               <TabsContent value="notes">
                 <h2 className="text-xl font-semibold mb-4">Notes</h2>
@@ -99,6 +103,10 @@ function AppContent() {
                 <h2 className="text-xl font-semibold mb-4">To-Do List</h2>
                 {/* <ToDoList items={todosList} onToggle={() => { }} /> */}
                 <ToDoCalendar />
+              </TabsContent>
+              <TabsContent value="planner">
+                <h2 className="text-xl font-semibold mb-4">Planner</h2>
+                <PlannerCalendar />
               </TabsContent>
             </Tabs>
 
