@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 
 export function PlannerCalendar() {
     const { selectedDate, setSelectedDate } = useApp();
-    const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('vertical');
 
     return (
         <Card>
@@ -24,14 +23,6 @@ export function PlannerCalendar() {
                     }}
                     className="rounded-md border"
                 />
-                <div className="flex space-x-4 my-4">
-                    <Button onClick={() => setViewMode('horizontal')} variant={viewMode === 'horizontal' ? 'default' : 'outline'}>
-                        Horizontal View
-                    </Button>
-                    <Button onClick={() => setViewMode('vertical')} variant={viewMode === 'vertical' ? 'default' : 'outline'}>
-                        Vertical View
-                    </Button>
-                </div>
             </CardContent>
         </Card>
     )

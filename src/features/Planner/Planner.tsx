@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, ChangeEvent } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useApp } from '@/context/AppContext'
 import { Agenda } from '@/util/types'
+import { PlannerTimeline } from './PlannerTimeline'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 export function Planner() {
     const { selectedDate } = useApp();
@@ -12,6 +14,7 @@ export function Planner() {
     const [description, setDescription] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [isHorizontal, setIsHorizontal] = useState(false);
 
     const addAgenda = () => {
         const newAgenda: Agenda = {
@@ -28,24 +31,39 @@ export function Planner() {
         setEndTime('');
     };
 
+    const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
+    const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value);
+    const handleStartTimeChange = (e: ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value);
+    const handleEndTimeChange = (e: ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value);
+
     return (
-        <div>
-            <h2 className="text-xl font-semibold mb-4">Add New Agenda</h2>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
-            <Input value={startTime} onChange={(e) => setStartTime(e.target.value)} placeholder="Start Time" />
-            <Input value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="End Time" />
-            <Button onClick={addAgenda} className="mt-4">Add Agenda</Button>
-            <div className="mt-4">
-                <h2 className="text-xl font-semibold mb-4">Agendas</h2>
-                {agendas.map(agenda => (
-                    <div key={agenda.id} className="mb-2">
-                        <h3 className="font-bold">{agenda.title}</h3>
-                        <p>{agenda.description}</p>
-                        <p>{agenda.startTime} - {agenda.endTime}</p>
+        <Card className="flex flex-col min-h-[80dvh] md:h-full relative">
+            <CardHeader>
+                <CardTitle>Add New Agenda</CardTitle>
+            </CardHeader>
+            <div className="grid w-full items-center gap-4">
+                <CardContent className="flex-grow flex flex-col space-y-4">
+                    <Input value={title} onChange={handleTitleChange} placeholder="Title" className="mb-2" />
+                    <Textarea value={description} onChange={handleDescriptionChange} placeholder="Description" className="mb-2" />
+                    <div className="flex mb-2">
+                        <label className="flex-1 mr-2">
+                            Start Time
+                            <Input type='time' value={startTime} onChange={handleStartTimeChange} />
+                        </label>
+                        <label className="flex-1">
+                            End Time
+                            <Input type='time' value={endTime} onChange={handleEndTimeChange} />
+                        </label>
                     </div>
-                ))}
+                </CardContent>
+                <CardFooter className="flex justify-between">
+                    <Button onClick={addAgenda} className="mt-4">Add Agenda</Button>
+                    <Button onClick={() => setIsHorizontal(!isHorizontal)} className="mt-4 ml-2">
+                        Toggle {isHorizontal ? 'Vertical' : 'Horizontal'} View
+                    </Button>
+                </CardFooter>
             </div>
-        </div>
+            <PlannerTimeline agendas={agendas} isHorizontal={isHorizontal} />
+        </Card>
     )
 }

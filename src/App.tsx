@@ -19,6 +19,8 @@ import { Note } from './util/types'
 import { AppProvider, useApp } from './context/AppContext'
 import { Planner } from './features/Planner/Planner'
 import { PlannerCalendar } from './features/Planner/PlannerCalendar'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 
 if (!supabase) {
   console.error('Error! Supabase client could not be created!');
@@ -26,8 +28,10 @@ if (!supabase) {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
+    <AppProvider> 
+      <DndProvider backend={HTML5Backend}>
+        <AppContent />
+      </DndProvider>
     </AppProvider>
   )
 }
