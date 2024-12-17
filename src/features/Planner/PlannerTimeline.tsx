@@ -56,10 +56,14 @@ const DraggableAgenda = ({ agenda, isHorizontal, onDrop }: DraggableAgendaProps)
     });
 
     return (
-        <div ref={node => drag(drop(node))} className={`${isHorizontal ? 'mr-4' : 'mb-4'} ${isDragging ? 'opacity-50' : ''}`}>
-            <h3 className="font-bold">{agenda.title}</h3>
-            <p>{agenda.description}</p>
-            <p>{agenda.startTime} - {agenda.endTime}</p>
+        <div
+            ref={node => drag(drop(node))}
+            className={`hover:cursor-pointer p-4 border rounded shadow-sm ${isHorizontal ? 'mr-4' : 'mb-4'} ${isDragging ? 'opacity-50' : ''}`}
+            style={{ backgroundColor: 'white', width: '200px' }}
+        >
+            <h3 className="font-bold text-lg">{agenda.title}</h3>
+            <p className="text-sm text-gray-600">{agenda.description}</p>
+            <p className="text-xs text-gray-500">{agenda.startTime} - {agenda.endTime}</p>
         </div>
     );
 };

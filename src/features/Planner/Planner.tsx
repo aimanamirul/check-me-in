@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react'
+import { useState, ChangeEvent, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,7 +9,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 
 export function Planner() {
     const { selectedDate } = useApp();
-    const [agendas, setAgendas] = useState<Agenda[]>([]);
+    const [agendas, setAgendas] = useState<Agenda[]>(() => {
+        const savedAgendas = localStorage.getItem('agendas');
+        return savedAgendas ? JSON.parse(savedAgendas) : [];
+    });
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [startTime, setStartTime] = useState('');
@@ -24,12 +27,18 @@ export function Planner() {
             startTime,
             endTime,
         };
-        setAgendas([...agendas, newAgenda]);
+        const updatedAgendas = [...agendas, newAgenda];
+        setAgendas(updatedAgendas);
+        localStorage.setItem('agendas', JSON.stringify(updatedAgendas));
         setTitle('');
         setDescription('');
         setStartTime('');
         setEndTime('');
     };
+
+    useEffect(() => {
+        localStorage.setItem('agendas', JSON.stringify(agendas));
+    }, [agendas]);
 
     const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
     const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value);
