@@ -1,69 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { Agenda } from '@/util/types';
-import { useDrag, useDrop, DragSourceMonitor, DropTargetMonitor } from 'react-dnd';
+import React from 'react';
+import { useDrop } from 'react-dnd';
+import AgendaItem from './AgendaItem';
+import { Agenda as AgendaItemType } from '../../util/types';
+import { ScrollArea } from "@/components/ui/scroll-area"
 
-interface PlannerTimelineProps {
-    agendas: Agenda[];
-    isHorizontal: boolean;
+interface TimelineProps {
+  agendaItems: AgendaItemType[];
+  isVertical: boolean;
 }
 
-interface DraggableAgendaProps {
-    agenda: Agenda;
-    isHorizontal: boolean;
-    onDrop: (item: Agenda, monitor: DropTargetMonitor) => void;
-}
+const PlannerTimeline: React.FC<TimelineProps> = ({ agendaItems, isVertical }) => {
+  const hours = Array.from({ length: 24 }, (_, i) => i);
 
-export function PlannerTimeline({ agendas, isHorizontal }: PlannerTimelineProps) {
-    const [updatedAgendas, setUpdatedAgendas] = useState(agendas);
+  const getItemsForHour = (hour: number) => {
+    return agendaItems.filter(item => Number(item.startTime) <= hour && Number(item.endTime) > hour);
+  };
 
-    useEffect(() => {
-        setUpdatedAgendas(agendas);
-    }, [agendas]);
-
-    const handleDrop = (item: Agenda, monitor: DropTargetMonitor) => {
-        const delta = monitor.getDifferenceFromInitialOffset();
-        const newTime = calculateNewTime(item.startTime, delta);
-        const updatedAgenda = { ...item, startTime: newTime.startTime, endTime: newTime.endTime };
-        setUpdatedAgendas(prevAgendas => prevAgendas.map(agenda => agenda.id === item.id ? updatedAgenda : agenda));
-    };
-
-    const calculateNewTime = (startTime: string, delta: { x: number; y: number }) => {
-        // Logic to calculate new start and end time based on delta
-        // ...existing code...
-    };
+  const renderDroppableArea = (hour: number) => {
+    const [{ isOver }, drop] = useDrop(() => ({
+      accept: 'AGENDA_ITEM',
+      drop: () => ({ hour }),
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+      }),
+    }));
 
     return (
-        <div className={isHorizontal ? 'flex overflow-x-auto p-4' : 'block p-4'}>
-            {updatedAgendas.map(agenda => (
-                <DraggableAgenda key={agenda.id} agenda={agenda} isHorizontal={isHorizontal} onDrop={handleDrop} />
-            ))}
+      <div
+        ref={drop}
+        className={`
+          ${isVertical ? 'flex items-start border-b py-2' : 'inline-block border-r px-2 h-full'}
+          ${isOver ? 'bg-accent' : ''}
+          ${isVertical ? 'w-full' : 'w-48'}
+        `}
+      >
+        <div className={`font-semibold text-muted-foreground ${isVertical ? 'w-16' : 'h-8'}`}>
+          {`${hour.toString().padStart(2, '0')}:00`}
         </div>
-    );
-}
-
-const DraggableAgenda = ({ agenda, isHorizontal, onDrop }: DraggableAgendaProps) => {
-    const [{ isDragging }, drag] = useDrag({
-        type: 'AGENDA',
-        item: agenda,
-        collect: (monitor: DragSourceMonitor) => ({
-            isDragging: monitor.isDragging(),
-        }),
-    });
-
-    const [, drop] = useDrop({
-        accept: 'AGENDA',
-        drop: (item: Agenda, monitor: DropTargetMonitor) => onDrop(item, monitor),
-    });
-
-    return (
-        <div
-            ref={node => drag(drop(node))}
-            className={`hover:cursor-pointer p-4 border rounded shadow-sm ${isHorizontal ? 'mr-4' : 'mb-4'} ${isDragging ? 'opacity-50' : ''}`}
-            style={{ backgroundColor: 'white', width: '200px' }}
-        >
-            <h3 className="font-bold text-lg">{agenda.title}</h3>
-            <p className="text-sm text-gray-600">{agenda.description}</p>
-            <p className="text-xs text-gray-500">{agenda.startTime} - {agenda.endTime}</p>
+        <div className={`${isVertical ? 'flex-1' : 'min-h-[100px]'} relative`}>
+          {getItemsForHour(hour).map((item, index) => (
+            <AgendaItem 
+              key={item.id} 
+              item={item} 
+              index={index} 
+              isVertical={isVertical}
+              currentHour={hour}
+            />
+          ))}
         </div>
+      </div>
     );
+  };
+
+  return (
+    <ScrollArea className={`h-[600px] w-full rounded-md border ${isVertical ? '' : 'overflow-x-auto'}`}>
+      <div className={`p-4 ${isVertical ? '' : 'flex'}`}>
+        {hours.map((hour) => (
+          <React.Fragment key={hour}>
+            {renderDroppableArea(hour)}
+          </React.Fragment>
+        ))}
+      </div>
+    </ScrollArea>
+  );
 };
+
+export default PlannerTimeline;
+
