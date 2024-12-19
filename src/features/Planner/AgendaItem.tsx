@@ -1,47 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
-import { Agenda } from '../../util/types';
-import { Card, CardContent } from "@/components/ui/card";
+import React from 'react';
+import { useDrag } from 'react-dnd';
+import { AgendaItem as AgendaItemType } from '@/util/types';
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { X } from 'lucide-react'
 
 interface AgendaItemProps {
-  item: Agenda;
-  index: number;
+  item: AgendaItemType;
   isVertical: boolean;
   currentHour: number;
+  onResizeItem: (id: string, endHour: number) => void;
+  onRemoveItem: (id: string) => void;
 }
 
-const AgendaItem: React.FC<AgendaItemProps> = ({ item, index, isVertical, currentHour }) => {
-  const [height, setHeight] = useState(100);
-  const [width, setWidth] = useState(180);
+const AgendaItem: React.FC<AgendaItemProps> = ({ item, isVertical, currentHour, onResizeItem, onRemoveItem }) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'agendaItem',
+    item: { id: item.id },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  });
 
-  useEffect(() => {
-    const startHour = parseInt(item.startTime.split(':')[0]);
-    const endHour = parseInt(item.endTime.split(':')[0]);
-    const duration = endHour - startHour;
-    setHeight(duration * 100);
-    setWidth(duration * 180);
-  }, [item.startTime, item.endTime]);
-
-  const handleResize = (e: React.MouseEvent, direction: 'height' | 'width') => {
+  const handleResize = (e: React.MouseEvent) => {
     e.preventDefault();
-    const startX = e.clientX;
     const startY = e.clientY;
-    const startHeight = height;
-    const startWidth = width;
+    const startEndHour = item.endHour;
 
     const doDrag = (e: MouseEvent) => {
-      const startHour = parseInt(item.startTime.split(':')[0]);
-      if (direction === 'height') {
-        const newHeight = startHeight + e.clientY - startY;
-        setHeight(Math.max(100, newHeight));
-        const newEndHour = startHour + Math.max(1, Math.round(newHeight / 100));
-        item.endTime = `${newEndHour.toString().padStart(2, '0')}:00`;
-      } else {
-        const newWidth = startWidth + e.clientX - startX;
-        setWidth(Math.max(180, newWidth));
-        const newEndHour = startHour + Math.max(1, Math.round(newWidth / 180));
-        item.endTime = `${newEndHour.toString().padStart(2, '0')}:00`;
-      }
+      const deltaY = e.clientY - startY;
+      const deltaHours = Math.round(deltaY / 100);
+      const newEndHour = Math.max(item.startHour + 1, Math.min(24, startEndHour + deltaHours));
+      onResizeItem(item.id, newEndHour);
     };
 
     const stopDrag = () => {
@@ -53,53 +43,51 @@ const AgendaItem: React.FC<AgendaItemProps> = ({ item, index, isVertical, curren
     document.addEventListener('mouseup', stopDrag);
   };
 
-  const startHour = parseInt(item.startTime.split(':')[0]);
-  const itemStyle = {
-    position: 'absolute' as const,
-    top: isVertical ? `${(startHour - currentHour) * 100}px` : 0,
-    left: isVertical ? 0 : `${(startHour - currentHour) * 180}px`,
-    height: isVertical ? `${height}px` : '100%',
-    width: isVertical ? '100%' : `${width}px`,
-    zIndex: 10,
-  };
-
-  const [, drag] = useDrag({
-    type: 'AGENDA_ITEM',
-    item: { id: item.id, index },
-  });
-
-  const [, drop] = useDrop({
-    accept: 'AGENDA_ITEM',
-    hover: (draggedItem: { id: string; index: number }) => {
-      if (draggedItem.index !== index) {
-        // Handle item reordering logic here
-      }
-    },
-  });
+  const isFirstHour = currentHour === item.startHour;
+  const isLastHour = currentHour === item.endHour - 1;
 
   return (
-    <div ref={(node) => drag(drop(node))} style={itemStyle}>
-      <Card className="relative">
-        <CardContent className="p-2 h-full">
-          <h3 className="font-semibold">{item.title}</h3>
-          <p className="text-sm text-muted-foreground">{item.description}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {`${item.startTime} - ${item.endTime}`}
-          </p>
-        </CardContent>
-        {isVertical ? (
-          <div
-            className="absolute bottom-0 left-0 right-0 h-2 bg-primary/20 cursor-ns-resize"
-            onMouseDown={(e) => handleResize(e, 'height')}
-          />
-        ) : (
-          <div
-            className="absolute top-0 bottom-0 right-0 w-2 bg-primary/20 cursor-ew-resize"
-            onMouseDown={(e) => handleResize(e, 'width')}
-          />
+    <Card
+      ref={drag}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        height: '100px',
+        marginBottom: '8px',
+        backgroundColor: item.color,
+      }}
+      className="relative cursor-move"
+    >
+      <CardContent className="p-2">
+        {isFirstHour && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-1 right-1 h-6 w-6"
+            onClick={() => onRemoveItem(item.id)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         )}
-      </Card>
-    </div>
+        <h3 className="font-semibold pr-6">{item.title}</h3>
+        <p className="text-sm text-muted-foreground">{item.description}</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {isFirstHour ? `Starts: ${item.startHour}:00` : ''}
+          {isLastHour ? ` Ends: ${item.endHour}:00` : ''}
+        </p>
+      </CardContent>
+      {isLastHour && isVertical && (
+        <div
+          className="absolute bottom-0 left-0 right-0 h-2 bg-primary/20 cursor-ns-resize"
+          onMouseDown={handleResize}
+        />
+      )}
+      {isLastHour && !isVertical && (
+        <div
+          className="absolute top-0 bottom-0 right-0 w-2 bg-primary/20 cursor-ew-resize"
+          onMouseDown={handleResize}
+        />
+      )}
+    </Card>
   );
 };
 

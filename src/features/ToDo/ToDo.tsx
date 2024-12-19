@@ -10,6 +10,8 @@ import { useApp } from '@/context/AppContext'
 
 import supabase from '../../util/supabaseClient';
 
+import { formatDate } from '@/util/helpers'; // Import the helper function
+
 import { Spinner } from '@/components/spinner';
 
 export function ToDo() {
@@ -95,13 +97,7 @@ export function ToDo() {
     setIsLoading(false);
   }
 
-  const formatDate = (date: Date | undefined) => {
-    const today = new Date();
-    // const yesterday = 
-    if (date) {
-      return date.toDateString() === today.toDateString() ? "today" : `${date.toLocaleDateString("en-GB")}`;
-    }
-  }
+  
 
   return (
     <Card>

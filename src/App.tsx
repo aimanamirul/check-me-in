@@ -17,7 +17,7 @@ import { UserModule } from './features/User/UserModule'
 import { Spinner } from '@/components/spinner'
 import { Note } from './util/types'
 import { AppProvider, useApp } from './context/AppContext'
-import { Planner } from './features/Planner/Planner'
+import AgendaPlanner from './features/Planner/AgendaPlanner'
 import { PlannerCalendar } from './features/Planner/PlannerCalendar'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -75,7 +75,7 @@ function AppContent() {
             <div className="flex-grow overflow-auto">
               {activeTab === "notes" && <NoteEditor onNoteUpdated={fetchNotes} />}
               {activeTab === "todos" && <ToDo />}
-              {activeTab === "planner" && <Planner />}
+              {activeTab === "planner" && <AgendaPlanner />}
             </div>
           </div>
 

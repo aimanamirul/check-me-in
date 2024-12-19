@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { Agenda } from '../../util/types';
+import { AgendaItem } from '@/util/types';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,7 +12,7 @@ import {
 } from "@/components/ui/select"
 
 interface AgendaFormProps {
-  onCreateAgendaItem: (newItem: Agenda) => void;
+  onCreateAgendaItem: (newItem: AgendaItem) => void;
 }
 
 const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
@@ -24,16 +23,14 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newItem: Agenda = {
-      id: uuidv4(),
+    const newItem: Omit<AgendaItem, 'color'> = {
+      id: Date.now().toString(),
       title,
       description,
-      startDate: new Date(),
-      endDate: new Date(),
-      startTime: `${startHour}:00`,
-      endTime: `${endHour}:00`,
+      startHour: parseInt(startHour),
+      endHour: parseInt(endHour),
     };
-    onCreateAgendaItem(newItem);
+    onCreateAgendaItem(newItem as AgendaItem); // Color will be added in AgendaPlanner
     setTitle('');
     setDescription('');
     setStartHour('0');
@@ -66,12 +63,7 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
         <div className="space-y-2">
           <Label htmlFor="startHour">Start Hour</Label>
-          <Select value={startHour} onValueChange={(value) => {
-            setStartHour(value);
-            if (parseInt(value) >= parseInt(endHour)) {
-              setEndHour((parseInt(value) + 1).toString());
-            }
-          }}>
+          <Select value={startHour} onValueChange={setStartHour}>
             <SelectTrigger>
               <SelectValue placeholder="Select start hour" />
             </SelectTrigger>
@@ -92,7 +84,7 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: 24 }, (_, i) => (
-                <SelectItem key={i + 1} value={(i + 1).toString()} disabled={i + 1 <= parseInt(startHour)}>
+                <SelectItem key={i} value={(i + 1).toString()} disabled={i + 1 <= parseInt(startHour)}>
                   {`${(i + 1).toString().padStart(2, '0')}:00`}
                 </SelectItem>
               ))}
@@ -102,8 +94,7 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
         <Button type="submit">Add Item</Button>
       </div>
     </form>
-  );
-};
+  );};
 
 export default AgendaForm;
 
