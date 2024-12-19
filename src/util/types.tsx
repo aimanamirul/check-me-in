@@ -27,14 +27,13 @@ export interface User {
   email?: string;
 } 
 
-export interface Agenda {
+export interface AgendaItem {
   id: string;
   title: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
-  startTime: string;
-  endTime: string;
+  startHour: number;
+  endHour: number;
+  color: string;
 }
 
 // Zod Schemas
