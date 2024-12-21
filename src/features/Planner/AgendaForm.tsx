@@ -10,12 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useApp } from '@/context/AppContext'
 
 interface AgendaFormProps {
   onCreateAgendaItem: (newItem: AgendaItem) => void;
 }
 
 const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
+  const { selectedDate } = useApp();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [startHour, setStartHour] = useState('0');
@@ -29,6 +31,7 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
       description,
       startHour: parseInt(startHour),
       endHour: parseInt(endHour),
+      date: selectedDate ? selectedDate.toLocaleDateString('en-GB') : '', // Format date to DD/MM/YYYY
     };
     onCreateAgendaItem(newItem as AgendaItem); // Color will be added in AgendaPlanner
     setTitle('');

@@ -34,6 +34,12 @@ export interface AgendaItem {
   startHour: number;
   endHour: number;
   color: string;
+  date: string;
+}
+
+export interface StoredAgenda {
+  date: string;
+  agendaItems: AgendaItem[];
 }
 
 // Zod Schemas

@@ -59,6 +59,10 @@ const PlannerTimeline: React.FC<PlannerTimelineProps> = ({ agendaItems, isVertic
     };
   }, []);
 
+  useEffect(() => {
+    console.log('Agenda items updated:', agendaItems);
+  }, [agendaItems]);
+
   return (
     <ScrollArea className="h-[600px] w-full rounded-md border">
       <div

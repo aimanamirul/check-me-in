@@ -1,8 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from '@/components/ui/calendar'
 import { useApp } from '@/context/AppContext'
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
 
 export function PlannerCalendar() {
     const { selectedDate, setSelectedDate } = useApp();

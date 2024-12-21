@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import PlannerTimeline from './PlannerTimeline';
 import AgendaForm from './AgendaForm';
-import { AgendaItem } from '@/util/types';
+import { AgendaItem, StoredAgenda } from '@/util/types';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { useApp } from '@/context/AppContext'
-import { formatDate } from '@/util/helpers'; 
+import { formatDate } from '@/util/helpers';
 
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360);
@@ -19,32 +19,57 @@ const AgendaPlanner: React.FC = () => {
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [isVertical, setIsVertical] = useState(true);
 
+  useEffect(() => {
+    console.log('?');
+
+    const savedAgendas = localStorage.getItem('agendas');
+    if (savedAgendas) {
+      const parsedAgendas: StoredAgenda[] = JSON.parse(savedAgendas);
+      const formattedDate = selectedDate.toLocaleDateString('en-GB'); // Format date to DD/MM/YYYY
+      const currentAgenda = parsedAgendas.find(agenda => agenda.date === formattedDate);
+      setAgendaItems(currentAgenda ? currentAgenda.agendaItems : []);
+    }
+  }, [selectedDate]);
+
+  const saveAgendasToLocalStorage = (newAgendaItems: AgendaItem[]) => {
+    const savedAgendas = localStorage.getItem('agendas');
+    const parsedAgendas: StoredAgenda[] = savedAgendas ? JSON.parse(savedAgendas) : [];
+    const formattedDate = selectedDate.toLocaleDateString('en-GB'); // Format date to DD/MM/YYYY
+    const updatedAgendas = parsedAgendas.filter(agenda => agenda.date !== formattedDate);
+    updatedAgendas.push({ date: formattedDate, agendaItems: newAgendaItems });
+    localStorage.setItem('agendas', JSON.stringify(updatedAgendas));
+  };
+
   const handleCreateAgendaItem = (newItem: AgendaItem) => {
-    setAgendaItems([...agendaItems, { ...newItem, color: generateRandomColor() }]);
+    const updatedAgendaItems = [...agendaItems, { ...newItem, color: generateRandomColor() }];
+    setAgendaItems(updatedAgendaItems);
+    saveAgendasToLocalStorage(updatedAgendaItems);
   };
 
   const handleMoveItem = (id: string, newStartHour: number) => {
-    setAgendaItems(prevItems => 
-      prevItems.map(item => {
-        if (item.id === id) {
-          const duration = item.endHour - item.startHour;
-          return { ...item, startHour: newStartHour, endHour: newStartHour + duration };
-        }
-        return item;
-      })
-    );
+    const updatedAgendaItems = agendaItems.map(item => {
+      if (item.id === id) {
+        const duration = item.endHour - item.startHour;
+        return { ...item, startHour: newStartHour, endHour: newStartHour + duration };
+      }
+      return item;
+    });
+    setAgendaItems(updatedAgendaItems);
+    saveAgendasToLocalStorage(updatedAgendaItems);
   };
 
   const handleResizeItem = (id: string, newEndHour: number) => {
-    setAgendaItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, endHour: newEndHour } : item
-      )
+    const updatedAgendaItems = agendaItems.map(item =>
+      item.id === id ? { ...item, endHour: newEndHour } : item
     );
+    setAgendaItems(updatedAgendaItems);
+    saveAgendasToLocalStorage(updatedAgendaItems);
   };
 
   const handleRemoveItem = (id: string) => {
-    setAgendaItems(prevItems => prevItems.filter(item => item.id !== id));
+    const updatedAgendaItems = agendaItems.filter(item => item.id !== id);
+    setAgendaItems(updatedAgendaItems);
+    saveAgendasToLocalStorage(updatedAgendaItems);
   };
 
   return (
@@ -63,9 +88,9 @@ const AgendaPlanner: React.FC = () => {
         </CardHeader>
         <CardContent>
           <AgendaForm onCreateAgendaItem={handleCreateAgendaItem} />
-          <PlannerTimeline 
-            agendaItems={agendaItems} 
-            isVertical={isVertical} 
+          <PlannerTimeline
+            agendaItems={agendaItems}
+            isVertical={isVertical}
             onMoveItem={handleMoveItem}
             onResizeItem={handleResizeItem}
             onRemoveItem={handleRemoveItem}
