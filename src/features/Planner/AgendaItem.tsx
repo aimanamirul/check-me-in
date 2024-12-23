@@ -3,7 +3,7 @@ import { useDrag } from 'react-dnd';
 import { AgendaItem as AgendaItemType } from '@/util/types';
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { X } from 'lucide-react'
+import { X, Edit } from 'lucide-react'
 
 interface AgendaItemProps {
   item: AgendaItemType;
@@ -11,9 +11,10 @@ interface AgendaItemProps {
   currentHour: number;
   onResizeItem: (id: string, endHour: number) => void;
   onRemoveItem: (id: string) => void;
+  onEditItem: (item: AgendaItemType) => void;
 }
 
-const AgendaItem: React.FC<AgendaItemProps> = ({ item, isVertical, currentHour, onResizeItem, onRemoveItem }) => {
+const AgendaItem: React.FC<AgendaItemProps> = ({ item, isVertical, currentHour, onResizeItem, onRemoveItem, onEditItem }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'agendaItem',
     item: { id: item.id },
@@ -59,14 +60,24 @@ const AgendaItem: React.FC<AgendaItemProps> = ({ item, isVertical, currentHour, 
     >
       <CardContent className="p-2">
         {isFirstHour && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-1 right-1 h-6 w-6"
-            onClick={() => onRemoveItem(item.id)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => onRemoveItem(item.id)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-1 right-8 h-6 w-6"
+              onClick={() => onEditItem(item)}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </>
         )}
         <h3 className="font-semibold pr-6">{item.title}</h3>
         <p className="text-sm text-muted-foreground">{item.description}</p>

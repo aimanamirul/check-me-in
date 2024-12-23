@@ -14,19 +14,21 @@ import { useApp } from '@/context/AppContext'
 
 interface AgendaFormProps {
   onCreateAgendaItem: (newItem: AgendaItem) => void;
+  initialData?: AgendaItem;
+  mode: 'add' | 'edit';
 }
 
-const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
+const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem, initialData, mode }) => {
   const { selectedDate } = useApp();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [startHour, setStartHour] = useState('0');
-  const [endHour, setEndHour] = useState('1');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [startHour, setStartHour] = useState(initialData ? initialData.startHour.toString() : '0');
+  const [endHour, setEndHour] = useState(initialData ? initialData.endHour.toString() : '1');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newItem: Omit<AgendaItem, 'color'> = {
-      id: Date.now().toString(),
+      id: initialData?.id || Date.now().toString(),
       title,
       description,
       startHour: parseInt(startHour),
@@ -34,10 +36,12 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
       date: selectedDate ? selectedDate.toLocaleDateString('en-GB') : '', // Format date to DD/MM/YYYY
     };
     onCreateAgendaItem(newItem as AgendaItem); // Color will be added in AgendaPlanner
-    setTitle('');
-    setDescription('');
-    setStartHour('0');
-    setEndHour('1');
+    if (mode === 'add') {
+      setTitle('');
+      setDescription('');
+      setStartHour('0');
+      setEndHour('1');
+    }
   };
 
   return (
@@ -94,10 +98,11 @@ const AgendaForm: React.FC<AgendaFormProps> = ({ onCreateAgendaItem }) => {
             </SelectContent>
           </Select>
         </div>
-        <Button type="submit">Add Item</Button>
+        <Button type="submit">{mode === 'add' ? 'Add Item' : 'Update Item'}</Button>
       </div>
     </form>
-  );};
+  );
+};
 
 export default AgendaForm;
 

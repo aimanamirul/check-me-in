@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from '@/context/AppContext'
 import { formatDate } from '@/util/helpers';
 import supabase from '@/util/supabaseClient';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360);
@@ -19,6 +20,8 @@ const AgendaPlanner: React.FC = () => {
   const { selectedDate, session } = useApp();
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [isVertical, setIsVertical] = useState(true);
+  const [editingItem, setEditingItem] = useState<AgendaItem | null>(null);
+  const [formMode, setFormMode] = useState<'add' | 'edit'>('add');
 
   useEffect(() => {
     const fetchAgendas = async () => {
@@ -119,6 +122,22 @@ const AgendaPlanner: React.FC = () => {
     saveAgendasToSupabase(updatedAgendaItems);
   };
 
+  const handleEditItem = (item: AgendaItem) => {
+    setEditingItem(item);
+    setFormMode('edit');
+  };
+
+  const handleUpdateAgendaItem = (updatedItem: AgendaItem) => {
+    const updatedAgendaItems = agendaItems.map(item => 
+      item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+    );
+    setAgendaItems(updatedAgendaItems);
+    saveAgendasToLocalStorage(updatedAgendaItems);
+    saveAgendasToSupabase(updatedAgendaItems);
+    setEditingItem(null);
+    setFormMode('add');
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <Card className={`w-full ${isVertical ? 'max-w-6xl' : ''} mx-auto`}>
@@ -134,16 +153,35 @@ const AgendaPlanner: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <AgendaForm onCreateAgendaItem={handleCreateAgendaItem} />
+          <AgendaForm
+            mode={formMode}
+            initialData={formMode === 'edit' ? editingItem : undefined}
+            onCreateAgendaItem={formMode === 'add' ? handleCreateAgendaItem : handleUpdateAgendaItem}
+          />
           <PlannerTimeline
             agendaItems={agendaItems}
             isVertical={isVertical}
             onMoveItem={handleMoveItem}
             onResizeItem={handleResizeItem}
             onRemoveItem={handleRemoveItem}
+            onEditItem={handleEditItem}
           />
         </CardContent>
       </Card>
+      {editingItem && (
+        <Dialog open={!!editingItem} onOpenChange={() => { setEditingItem(null); setFormMode('add'); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Agenda Item</DialogTitle>
+            </DialogHeader>
+            <AgendaForm
+              mode="edit"
+              initialData={editingItem}
+              onCreateAgendaItem={handleUpdateAgendaItem}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </DndProvider>
   );
 };

@@ -10,9 +10,10 @@ interface PlannerTimelineProps {
   onMoveItem: (id: string, startHour: number) => void;
   onResizeItem: (id: string, endHour: number) => void;
   onRemoveItem: (id: string) => void;
+  onEditItem: (item: AgendaItemType) => void;
 }
 
-const PlannerTimeline: React.FC<PlannerTimelineProps> = ({ agendaItems, isVertical, onMoveItem, onResizeItem, onRemoveItem }) => {
+const PlannerTimeline: React.FC<PlannerTimelineProps> = ({ agendaItems, isVertical, onMoveItem, onResizeItem, onRemoveItem, onEditItem }) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -86,6 +87,7 @@ const PlannerTimeline: React.FC<PlannerTimelineProps> = ({ agendaItems, isVertic
             onMoveItem={onMoveItem}
             onResizeItem={onResizeItem}
             onRemoveItem={onRemoveItem}
+            onEditItem={onEditItem}
           />
         ))}
       </div>
@@ -101,9 +103,10 @@ interface HourSlotProps {
   onMoveItem: (id: string, startHour: number) => void;
   onResizeItem: (id: string, endHour: number) => void;
   onRemoveItem: (id: string) => void;
+  onEditItem: (item: AgendaItemType) => void;
 }
 
-const HourSlot: React.FC<HourSlotProps> = ({ hour, isVertical, items, onMoveItem, onResizeItem, onRemoveItem }) => {
+const HourSlot: React.FC<HourSlotProps> = ({ hour, isVertical, items, onMoveItem, onResizeItem, onRemoveItem, onEditItem }) => {
   const [{ isOver }, drop] = useDrop({
     accept: 'agendaItem',
     drop: (item: { id: string }) => onMoveItem(item.id, hour),
@@ -133,6 +136,7 @@ const HourSlot: React.FC<HourSlotProps> = ({ hour, isVertical, items, onMoveItem
             currentHour={hour}
             onResizeItem={onResizeItem}
             onRemoveItem={onRemoveItem}
+            onEditItem={onEditItem}
           />
         ))}
       </div>
