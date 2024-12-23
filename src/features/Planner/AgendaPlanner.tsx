@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { useApp } from '@/context/AppContext'
 import { formatDate } from '@/util/helpers';
+import supabase from '@/util/supabaseClient';
 
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360);
@@ -15,21 +16,43 @@ const generateRandomColor = () => {
 };
 
 const AgendaPlanner: React.FC = () => {
-  const { selectedDate } = useApp();
+  const { selectedDate, session } = useApp();
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
   const [isVertical, setIsVertical] = useState(true);
 
   useEffect(() => {
-    console.log('?');
+    const fetchAgendas = async () => {
+      if (!session) {
+        const savedAgendas = localStorage.getItem('agendas');
+        if (savedAgendas) {
+          const parsedAgendas: StoredAgenda[] = JSON.parse(savedAgendas);
+          const formattedDate = selectedDate.toLocaleDateString('en-GB'); // Format date to DD/MM/YYYY
+          const currentAgenda = parsedAgendas.find(agenda => agenda.date === formattedDate);
+          setAgendaItems(currentAgenda ? currentAgenda.agendaItems : []);
+        }
+        return;
+      }
 
-    const savedAgendas = localStorage.getItem('agendas');
-    if (savedAgendas) {
-      const parsedAgendas: StoredAgenda[] = JSON.parse(savedAgendas);
-      const formattedDate = selectedDate.toLocaleDateString('en-GB'); // Format date to DD/MM/YYYY
-      const currentAgenda = parsedAgendas.find(agenda => agenda.date === formattedDate);
-      setAgendaItems(currentAgenda ? currentAgenda.agendaItems : []);
-    }
-  }, [selectedDate]);
+      try {
+        const { data, error } = await supabase
+          .from('agendas')
+          .select('*')
+          .eq('date', selectedDate.toLocaleDateString('en-GB'))
+          .eq('user_id', session.user.id);
+
+        if (error) {
+          console.error('Error fetching agendas:', error);
+          return;
+        }
+
+        setAgendaItems(data.length ? data[0].agendaItems : []);
+      } catch (error) {
+        console.error('Error fetching agendas:', error);
+      }
+    };
+
+    fetchAgendas();
+  }, [selectedDate, session]);
 
   const saveAgendasToLocalStorage = (newAgendaItems: AgendaItem[]) => {
     const savedAgendas = localStorage.getItem('agendas');
@@ -40,10 +63,31 @@ const AgendaPlanner: React.FC = () => {
     localStorage.setItem('agendas', JSON.stringify(updatedAgendas));
   };
 
+  const saveAgendasToSupabase = async (newAgendaItems: AgendaItem[]) => {
+    if (!session) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('agendas')
+        .upsert({
+          date: selectedDate.toLocaleDateString('en-GB'),
+          user_id: session.user.id,
+          agendaItems: newAgendaItems,
+        });
+
+      if (error) {
+        console.error('Error saving agendas:', error);
+      }
+    } catch (error) {
+      console.error('Error saving agendas:', error);
+    }
+  };
+
   const handleCreateAgendaItem = (newItem: AgendaItem) => {
     const updatedAgendaItems = [...agendaItems, { ...newItem, color: generateRandomColor() }];
     setAgendaItems(updatedAgendaItems);
     saveAgendasToLocalStorage(updatedAgendaItems);
+    saveAgendasToSupabase(updatedAgendaItems);
   };
 
   const handleMoveItem = (id: string, newStartHour: number) => {
@@ -56,6 +100,7 @@ const AgendaPlanner: React.FC = () => {
     });
     setAgendaItems(updatedAgendaItems);
     saveAgendasToLocalStorage(updatedAgendaItems);
+    saveAgendasToSupabase(updatedAgendaItems);
   };
 
   const handleResizeItem = (id: string, newEndHour: number) => {
@@ -64,12 +109,14 @@ const AgendaPlanner: React.FC = () => {
     );
     setAgendaItems(updatedAgendaItems);
     saveAgendasToLocalStorage(updatedAgendaItems);
+    saveAgendasToSupabase(updatedAgendaItems);
   };
 
   const handleRemoveItem = (id: string) => {
     const updatedAgendaItems = agendaItems.filter(item => item.id !== id);
     setAgendaItems(updatedAgendaItems);
     saveAgendasToLocalStorage(updatedAgendaItems);
+    saveAgendasToSupabase(updatedAgendaItems);
   };
 
   return (

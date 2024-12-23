@@ -12,8 +12,9 @@ interface AppContextType {
   notes: Note[];
   fetchNotes: () => Promise<void>;
   isLoadingNotes: boolean;
-  selectedDate: Date | undefined;
-  setSelectedDate: (date: Date | undefined) => void;
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
+  fetchAgendas: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,7 +24,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoadingNotes, setIsLoadingNotes] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const { toast } = useToast();
 
   const toggleDarkMode = () => {
@@ -85,6 +86,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchNotes();
   }, [session]);
 
+  const fetchAgendas = async () => {
+    // Implementation will be in AgendaPlanner
+  };
+
   const value = {
     isDarkMode,
     toggleDarkMode,
@@ -95,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     isLoadingNotes,
     selectedDate,
     setSelectedDate,
+    fetchAgendas,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
