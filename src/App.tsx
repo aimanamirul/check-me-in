@@ -5,11 +5,11 @@ import { ToDo } from './features/ToDo/ToDo'
 import { ToDoCalendar } from './features/ToDo/ToDoCalendar'
 import { NoteList } from './features/Notes/NoteList'
 import { Button } from "@/components/ui/button"
-import { Moon, Sun, BookOpenText, List } from 'lucide-react'
+import { Moon, Sun, BookOpenText, List, Cog } from 'lucide-react'
 import { LoginModule } from './features/User/LoginModule'
 import { NoteViewer } from './features/Notes/NoteViewer'
 import { Registration } from './features/User/Registration'
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from '@/components/ui/toaster'
 import { useToast } from '@/hooks/use-toast'
 import supabase from './util/supabaseClient'
 import { Session } from '@supabase/supabase-js'
@@ -21,6 +21,7 @@ import AgendaPlanner from './features/Planner/AgendaPlanner'
 import { PlannerCalendar } from './features/Planner/PlannerCalendar'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { Settings } from './Settings'
 
 if (!supabase) {
   console.error('Error! Supabase client could not be created!');
@@ -42,6 +43,7 @@ function AppContent() {
   const [authTab, setAuthTab] = useState("login");
   const [viewMode, setViewMode] = useState<'list' | 'individual'>('list');
   const { toast } = useToast();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleLogin = (session: Session | null) => {
     console.log("Logging in");
@@ -68,9 +70,14 @@ function AppContent() {
           <div className="lg:col-span-8 p-4 min-h-screen flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold">Daily Check-In</h1>
-              <Button onClick={toggleDarkMode} variant="outline">
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
+              <div className="flex space-x-2">
+                <Button onClick={toggleDarkMode} variant="outline">
+                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </Button>
+                <Button onClick={() => setIsSettingsOpen(true)} variant="outline">
+                  <Cog className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="flex-grow overflow-auto">
               {activeTab === "notes" && <NoteEditor onNoteUpdated={fetchNotes} />}
@@ -134,6 +141,7 @@ function AppContent() {
         </div>
       </div>
       {isLoadingNotes && <Spinner text="Loading notes..." />}
+      <Settings isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   )
 }

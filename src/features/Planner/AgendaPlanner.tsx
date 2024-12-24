@@ -155,7 +155,7 @@ const AgendaPlanner: React.FC = () => {
         <CardContent>
           <AgendaForm
             mode={formMode}
-            initialData={formMode === 'edit' ? editingItem : undefined}
+            initialData={formMode === 'edit' && editingItem ? editingItem : undefined}
             onCreateAgendaItem={formMode === 'add' ? handleCreateAgendaItem : handleUpdateAgendaItem}
           />
           <PlannerTimeline
