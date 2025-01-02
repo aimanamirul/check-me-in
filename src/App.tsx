@@ -22,6 +22,7 @@ import { PlannerCalendar } from './features/Planner/PlannerCalendar'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Settings } from './Settings'
+import GpaCalculator from './features/GpaCalculator/GpaCalculator'
 
 if (!supabase) {
   console.error('Error! Supabase client could not be created!');
@@ -83,15 +84,17 @@ function AppContent() {
               {activeTab === "notes" && <NoteEditor onNoteUpdated={fetchNotes} />}
               {activeTab === "todos" && <ToDo />}
               {activeTab === "planner" && <AgendaPlanner />}
+              {activeTab === "gpa" && <GpaCalculator />}
             </div>
           </div>
 
           <div className="lg:col-span-4 p-4 min-h-screen flex flex-col">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsList className="grid w-full grid-cols-4 mb-4">
                 <TabsTrigger value="notes" className="text-gray-700 data-[state=inactive]:text-gray-300">Notes</TabsTrigger>
                 <TabsTrigger value="todos" className="text-gray-700 data-[state=inactive]:text-gray-300">To-Do List</TabsTrigger>
                 <TabsTrigger value="planner" className="text-gray-700 data-[state=inactive]:text-gray-300">Planner</TabsTrigger>
+                <TabsTrigger value="gpa" className="text-gray-700 data-[state=inactive]:text-gray-300">GPA Calculator</TabsTrigger>
               </TabsList>
               <TabsContent value="notes">
                 <h2 className="text-xl font-semibold mb-4">Notes</h2>
@@ -118,6 +121,10 @@ function AppContent() {
               <TabsContent value="planner">
                 <h2 className="text-xl font-semibold mb-4">Planner</h2>
                 <PlannerCalendar />
+              </TabsContent>
+              <TabsContent value="gpa">
+                <h2 className="text-xl font-semibold mb-4">GPA Calculator</h2>
+                {/* <GpaCalculator /> */}
               </TabsContent>
             </Tabs>
 
