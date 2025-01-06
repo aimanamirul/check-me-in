@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useApp } from '@/context/AppContext'
 import { formatDate } from '@/util/helpers';
 import supabase from '@/util/supabaseClient';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const generateRandomColor = () => {
   const hue = Math.floor(Math.random() * 360);
@@ -70,7 +70,7 @@ const AgendaPlanner: React.FC = () => {
     if (!session) return;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('agendas')
         .upsert({
           date: selectedDate.toLocaleDateString('en-GB'),

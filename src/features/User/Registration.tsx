@@ -32,7 +32,7 @@ export const Registration: React.FC<RegistrationProps> = ({ onRegistrationSucces
     async function onSubmit(data: z.infer<typeof userRegSchema>) {
         try {
             setIsLoading(true);
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const { error: authError } = await supabase.auth.signUp({
                 email: data.email,
                 password: data.password,
                 options: {

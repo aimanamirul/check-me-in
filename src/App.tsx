@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { NoteEditor } from './features/Notes/NoteEditor'
 import { ToDo } from './features/ToDo/ToDo'
@@ -15,7 +15,6 @@ import supabase from './util/supabaseClient'
 import { Session } from '@supabase/supabase-js'
 import { UserModule } from './features/User/UserModule'
 import { Spinner } from '@/components/spinner'
-import { Note } from './util/types'
 import { AppProvider, useApp } from './context/AppContext'
 import AgendaPlanner from './features/Planner/AgendaPlanner'
 import { PlannerCalendar } from './features/Planner/PlannerCalendar'
