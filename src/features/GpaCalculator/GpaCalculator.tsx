@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,7 +22,6 @@ const getRandomColor = () => {
 export default function GpaCalculator() {
     const [semesters, setSemesters] = useState<Semester[]>([])
     const [newSemester, setNewSemester] = useState<string>('')
-    const [newCourse, setNewCourse] = useState<Course>({ id: '', name: '', credits: 0, grade: '' })
     const [gradeScale, setGradeScale] = useState<GradeScale>({
         'A': 4.0,
         'A-': 3.75, 
@@ -36,31 +35,46 @@ export default function GpaCalculator() {
     })
 
     const gradeOptions = Object.keys(gradeScale);
+    const [newCourse, setNewCourse] = useState<Course>({ id: '', name: '', credits: 0, grade: gradeOptions[0] })
+
+    useEffect(() => {
+        const savedSemesters = localStorage.getItem('semesters');
+        if (savedSemesters) {
+            console.log(savedSemesters)
+            setSemesters(JSON.parse(savedSemesters));
+        }
+    }, []); // Add an empty dependency array here
 
     const addSemester = () => {
         if (newSemester) {
-            setSemesters([...semesters, { id: uuidv4(), name: newSemester, courses: [], color: getRandomColor() }])
-            setNewSemester('')
+            const updatedSemesters = [...semesters, { id: uuidv4(), name: newSemester, courses: [], color: getRandomColor() }];
+            setSemesters(updatedSemesters);
+            localStorage.setItem('semesters', JSON.stringify(updatedSemesters)); // Save to local storage
+            setNewSemester('');
         }
     }
 
     const addCourse = (semesterId: string) => {
         if (newCourse.name && newCourse.credits && newCourse.grade) {
-            setSemesters(semesters.map(semester =>
+            const updatedSemesters = semesters.map(semester =>
                 semester.id === semesterId
                     ? { ...semester, courses: [...semester.courses, { ...newCourse, id: uuidv4() }] }
                     : semester
-            ))
-            setNewCourse({ id: '', name: '', credits: 0, grade: '' })
+            );
+            setSemesters(updatedSemesters);
+            localStorage.setItem('semesters', JSON.stringify(updatedSemesters)); // Save to local storage
+            setNewCourse({ id: '', name: '', credits: 0, grade: gradeOptions[0] });
         }
     }
 
     const removeCourse = (semesterId: string, courseId: string) => {
-        setSemesters(semesters.map(semester =>
+        const updatedSemesters = semesters.map(semester =>
             semester.id === semesterId
                 ? { ...semester, courses: semester.courses.filter(course => course.id !== courseId) }
                 : semester
-        ))
+        );
+        setSemesters(updatedSemesters);
+        localStorage.setItem('semesters', JSON.stringify(updatedSemesters)); // Save to local storage
     }
 
     const updateCourseGrade = (semesterId: string, courseId: string, newGrade: string) => {
